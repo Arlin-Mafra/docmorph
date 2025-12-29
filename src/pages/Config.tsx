@@ -1,13 +1,19 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppRoute } from '../types';
 import { FileService } from '../services/files';
 import { supabase } from '../lib/supabase';
 
 const Config: React.FC = () => {
   const navigate = useNavigate();
-  const [format, setFormat] = useState('PDF');
+  const location = useLocation();
+  const toolState = location.state as { tool: string; title: string } | null;
+  const pageTitle = toolState?.title || 'Configurar Arquivos';
+
+  // Default format based on tool
+  const defaultFormat = toolState?.tool === 'jpg' ? 'JPG' : 'PDF';
+
+  const [format, setFormat] = useState(defaultFormat);
   const [compression, setCompression] = useState('Equilibrada');
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,9 +32,14 @@ const Config: React.FC = () => {
 
       const userFiles = await FileService.getUserFiles(user.id);
       setFiles(userFiles || []);
-      // Auto-select the most recent file if none selected
+      // Auto-select based on tool if possible?
+      // Or just keep the logic of selecting the most recent.
       if (userFiles && userFiles.length > 0 && selectedIds.length === 0) {
-        setSelectedIds([userFiles[0].id]);
+        // For merge tool, maybe select first 2? No, unsafe. Let user select.
+        // Just select first one for convenience as before.
+        if (toolState?.tool !== 'merge') {
+          setSelectedIds([userFiles[0].id]);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -51,31 +62,33 @@ const Config: React.FC = () => {
       return;
     }
 
+    if (toolState?.tool === 'merge' && selectedFiles.length < 2) {
+      alert('Para juntar PDFs, selecione pelo menos 2 arquivos.');
+      return;
+    }
+
     setProcessing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Determine action automatically
+      // Determine action automatically based on TOOL STATE if present, or fallback
       let action = 'compress_pdf';
 
-      // If output is JPG, we treat as image compression (or PDF to JPG if implemented)
-      if (format === 'JPG') {
-        action = 'compress_img';
-      }
-      // If output is PDF
-      else {
-        if (selectedFiles.length > 1) {
-          action = 'merge_pdf';
-        } else {
-          action = 'compress_pdf';
-        }
+      if (toolState?.tool) {
+        if (toolState.tool === 'merge') action = 'merge_pdf';
+        else if (toolState.tool === 'compress') action = 'compress_pdf';
+        else if (toolState.tool === 'jpg') action = 'compress_img';
+      } else {
+        // Fallback purely based on format/selection
+        if (format === 'JPG') action = 'compress_img';
+        else if (selectedFiles.length > 1) action = 'merge_pdf';
       }
 
       // Job Title
       const title = selectedFiles.length > 1
         ? `Merged ${selectedFiles.length} files`
-        : `Processed ${selectedFiles[0].name}`;
+        : `Processed ${selectedFiles[0].name} `;
 
       // 1. Create Job in DB
       const job = await FileService.createConversionJob(
@@ -116,12 +129,10 @@ const Config: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `result_${new Date().getTime()}.${format.toLowerCase()}`;
+      a.download = `result_${new Date().getTime()}.${format.toLowerCase()} `;
       document.body.appendChild(a);
       a.click();
       a.remove();
-
-      // Ideally we would also upload this result back to Supabase and update the job status.
 
       alert('Arquivo processado com sucesso!');
       navigate(AppRoute.HISTORY);
@@ -153,9 +164,9 @@ const Config: React.FC = () => {
           <button onClick={() => navigate(-1)} className="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
             <span className="material-symbols-outlined">arrow_back_ios_new</span>
           </button>
-          <h2 className="text-slate-900 dark:text-white text-lg font-bold">Configurar Arquivos</h2>
+          <h2 className="text-slate-900 dark:text-white text-lg font-bold">{pageTitle}</h2>
           <button
-            onClick={() => navigate(AppRoute.UPLOAD)}
+            onClick={() => navigate(AppRoute.UPLOAD, { state: toolState })}
             className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary"
           >
             <span className="material-symbols-outlined">add</span>
@@ -178,13 +189,13 @@ const Config: React.FC = () => {
                 <div
                   key={idx}
                   onClick={() => toggleSelection(file.id)}
-                  className={`group cursor-pointer flex items-center justify-between gap-4 p-4 rounded-xl shadow-soft border transition-all ${isSelected
-                    ? 'bg-primary/5 border-primary shadow-md'
-                    : 'bg-white dark:bg-slate-800 border-transparent dark:border-slate-700 hover:border-gray-200'
-                    }`}
+                  className={`group cursor - pointer flex items - center justify - between gap - 4 p - 4 rounded - xl shadow - soft border transition - all ${isSelected
+                      ? 'bg-primary/5 border-primary shadow-md'
+                      : 'bg-white dark:bg-slate-800 border-transparent dark:border-slate-700 hover:border-gray-200'
+                    } `}
                 >
                   <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                    <div className={`relative flex items-center justify-center rounded-xl shrink-0 size-12 ${isSelected ? 'bg-primary text-white' : 'bg-blue-50 text-blue-600'}`}>
+                    <div className={`relative flex items - center justify - center rounded - xl shrink - 0 size - 12 ${isSelected ? 'bg-primary text-white' : 'bg-blue-50 text-blue-600'} `}>
                       {isSelected ? (
                         <span className="material-symbols-outlined">check</span>
                       ) : (
@@ -192,7 +203,7 @@ const Config: React.FC = () => {
                       )}
                     </div>
                     <div className="flex flex-col justify-center overflow-hidden">
-                      <p className={`text-base font-semibold truncate leading-tight ${isSelected ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>{file.name}</p>
+                      <p className={`text - base font - semibold truncate leading - tight ${isSelected ? 'text-primary' : 'text-gray-900 dark:text-white'} `}>{file.name}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-gray-500 text-xs">{(file.size / 1024).toFixed(1)} KB</span>
                         <span className="size-1 rounded-full bg-gray-300"></span>
@@ -226,8 +237,8 @@ const Config: React.FC = () => {
                 <button
                   key={f}
                   onClick={() => setFormat(f)}
-                  className={`flex-1 min-w-[100px] flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all relative ${format === f ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-slate-700 text-gray-400'
-                    }`}
+                  className={`flex - 1 min - w - [100px] flex flex - col items - center justify - center gap - 2 p - 3 rounded - xl border - 2 transition - all relative ${format === f ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-slate-700 text-gray-400'
+                    } `}
                 >
                   {format === f && <div className="absolute top-2 right-2 size-2 rounded-full bg-primary"></div>}
                   <span className="material-symbols-outlined text-3xl">

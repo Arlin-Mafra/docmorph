@@ -128,5 +128,19 @@ export const FileService = {
             .eq('id', fileId);
 
         if (dbError) throw dbError;
+    },
+
+    /**
+     * User conversion history
+     */
+    async getConversionHistory(userId: string) {
+        const { data, error } = await supabase
+            .from('conversions')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
     }
 };

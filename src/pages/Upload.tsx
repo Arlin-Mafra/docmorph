@@ -1,11 +1,13 @@
-
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppRoute } from '../types';
 import BottomNav from '../components/BottomNav';
 
 const Upload: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const toolState = location.state as { tool: string; title: string } | null;
+  const pageTitle = toolState?.title || 'Converter PDF';
 
   const handleFileSelect = () => {
     // Determine input element
@@ -31,8 +33,7 @@ const Upload: React.FC = () => {
         const { FileService } = await import('../services/files');
         await FileService.uploadFile(file, user.id);
 
-        alert('Arquivo enviado com sucesso!');
-        navigate(AppRoute.CONFIG);
+        navigate(AppRoute.CONFIG, { state: toolState });
 
       } catch (error: any) {
         console.error(error);
@@ -51,7 +52,7 @@ const Upload: React.FC = () => {
         >
           <span className="material-symbols-outlined">arrow_back_ios_new</span>
         </button>
-        <h2 className="text-slate-900 dark:text-white text-lg font-bold tracking-tight">Converter PDF</h2>
+        <h2 className="text-slate-900 dark:text-white text-lg font-bold tracking-tight">{pageTitle}</h2>
         <div className="w-10"></div>
       </header>
 

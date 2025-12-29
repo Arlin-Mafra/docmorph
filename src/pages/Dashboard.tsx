@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
           {tools.map((tool) => (
             <button
               key={tool.id}
-              onClick={() => navigate(AppRoute.UPLOAD)}
+              onClick={() => navigate(AppRoute.UPLOAD, { state: { tool: tool.id, title: tool.title } })}
               className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-800 rounded-xl shadow-soft hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-primary/20 text-left"
             >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform ${getColorClass(tool.color)}`}>
