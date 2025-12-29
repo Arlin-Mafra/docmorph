@@ -1,0 +1,9 @@
+
+django
+djangorestframework
+django-cors-headers
+supabase
+pdf2docx
+pypdf
+Pillow
+python-docx

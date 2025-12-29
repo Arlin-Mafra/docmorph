@@ -10,10 +10,7 @@ const Dashboard: React.FC = () => {
   const tools = [
     { id: 'merge', title: 'Juntar PDFs', desc: 'Combine múltiplos arquivos em um único documento.', icon: 'layers', color: 'blue' },
     { id: 'compress', title: 'Comprimir PDF', desc: 'Reduza o tamanho do arquivo mantendo a qualidade.', icon: 'compress', color: 'orange' },
-    { id: 'word', title: 'PDF para Word', desc: 'Converta documentos para edição fácil no Word.', icon: 'description', color: 'indigo' },
-    { id: 'jpg', title: 'JPG para PDF', desc: 'Transforme fotos e imagens em documentos PDF.', icon: 'image', color: 'pink' },
-    { id: 'sign', title: 'Assinar PDF', desc: 'Adicione sua assinatura digital em segundos.', icon: 'ink_pen', color: 'teal' },
-    { id: 'edit', title: 'Editar PDF', desc: 'Adicione texto, formas e anotações livremente.', icon: 'edit_document', color: 'gray' },
+    { id: 'jpg', title: 'Otimizar Imagem', desc: 'Reduza o tamanho da imagem (JPG/PNG).', icon: 'image', color: 'pink' },
   ];
 
   const getColorClass = (color: string) => {
@@ -65,7 +62,7 @@ const Dashboard: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-4">
           {tools.map((tool) => (
-            <button 
+            <button
               key={tool.id}
               onClick={() => navigate(AppRoute.UPLOAD)}
               className="group relative flex flex-col items-start p-5 bg-white dark:bg-slate-800 rounded-xl shadow-soft hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-primary/20 text-left"

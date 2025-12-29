@@ -8,14 +8,44 @@ const Upload: React.FC = () => {
   const navigate = useNavigate();
 
   const handleFileSelect = () => {
-    // Mock selection
-    navigate(AppRoute.CONFIG);
+    // Determine input element
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        // Check auth
+        const { data: { user } } = await import('../lib/supabase').then(m => m.supabase.auth.getUser());
+        if (!user) {
+          alert('Faça login para fazer upload.');
+          navigate(AppRoute.LOGIN);
+          return;
+        }
+
+        // Show loading or something (simplified for now)
+        alert('Enviando arquivo...');
+
+        const { FileService } = await import('../services/files');
+        await FileService.uploadFile(file, user.id);
+
+        alert('Arquivo enviado com sucesso!');
+        navigate(AppRoute.CONFIG);
+
+      } catch (error: any) {
+        console.error(error);
+        alert('Erro no upload: ' + error.message);
+      }
+    };
+    input.click();
   };
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900">
       <header className="flex items-center bg-white dark:bg-slate-800 p-4 justify-between border-b border-gray-100 dark:border-slate-700">
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="text-slate-900 dark:text-white flex size-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
@@ -27,7 +57,7 @@ const Upload: React.FC = () => {
 
       <main className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto no-scrollbar pb-24">
         <div className="flex flex-col flex-1 justify-center min-h-[400px]">
-          <div 
+          <div
             onClick={handleFileSelect}
             className="relative group cursor-pointer flex flex-col items-center justify-center gap-6 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-6 py-12 shadow-soft transition-all duration-300 hover:border-primary hover:shadow-lg"
           >
@@ -60,7 +90,7 @@ const Upload: React.FC = () => {
             { label: 'Dropbox', icon: 'folder_open' },
             { label: 'iCloud', icon: 'cloud' }
           ].map((cloud) => (
-            <button 
+            <button
               key={cloud.label}
               className="flex flex-col gap-3 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 items-center justify-center shadow-sm hover:shadow-md transition-all active:scale-95 group"
             >
