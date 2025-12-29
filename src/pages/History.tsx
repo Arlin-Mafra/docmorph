@@ -62,7 +62,8 @@ const History: React.FC = () => {
           status: h.status === 'completed' ? 'ready' : h.status,
           icon,
           type,
-          section
+          section,
+          output_url: h.output_document?.storage_path ? supabase.storage.from('files').getPublicUrl(h.output_document.storage_path).data.publicUrl : null
         };
       }) || [];
 
@@ -81,14 +82,30 @@ const History: React.FC = () => {
     return acc;
   }, {});
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja apagar este histórico?')) return;
+    try {
+      await FileService.deleteConversion(id);
+      setItems(items.filter(i => i.id !== id));
+    } catch (e: any) {
+      console.error(e);
+      alert('Erro ao apagar: ' + e.message);
+    }
+  };
+
+  const handleDownload = (item: any) => {
+    if (item.output_url) {
+      window.open(item.output_url, '_blank');
+    } else {
+      alert('Arquivo não disponível para download.');
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-900">
       <header className="flex flex-col gap-2 bg-white dark:bg-slate-800 p-4 pb-2 sticky top-0 z-20 backdrop-blur-xl border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center h-12 justify-between">
           <h1 className="text-3xl font-bold leading-tight text-slate-900 dark:text-white">Histórico</h1>
-          <button className="flex items-center justify-center rounded-full size-10 text-slate-500 hover:bg-black/5 dark:hover:bg-white/5">
-            <span className="material-symbols-outlined">delete</span>
-          </button>
         </div>
       </header>
 
@@ -102,7 +119,12 @@ const History: React.FC = () => {
                 <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-3 ml-1">{sectionTitle}</h3>
                 <div className="flex flex-col gap-3">
                   {sections[sectionTitle].map((item: any) => (
-                    <HistoryCard key={item.id} item={item} />
+                    <HistoryCard
+                      key={item.id}
+                      item={item}
+                      onDelete={() => handleDelete(item.id)}
+                      onDownload={() => handleDownload(item)}
+                    />
                   ))}
                 </div>
               </section>
@@ -118,18 +140,18 @@ const History: React.FC = () => {
 };
 
 // Properly type the component using React.FC to handle special props like 'key'
-const HistoryCard: React.FC<{ item: any }> = ({ item }) => (
-  <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-soft active:scale-[0.98] transition-all">
-    <div className="relative shrink-0">
-      <div className={`flex items-center justify-center rounded-lg shrink-0 size-14 ${item.type === 'pdf' ? 'bg-red-50 text-red-500' : item.type === 'doc' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+const HistoryCard: React.FC<{ item: any, onDelete: () => void, onDownload: () => void }> = ({ item, onDelete, onDownload }) => (
+  <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-soft transition-all group">
+    <div className="relative shrink-0" onClick={onDownload}>
+      <div className={`cursor-pointer flex items-center justify-center rounded-lg shrink-0 size-14 ${item.type === 'pdf' ? 'bg-red-50 text-red-500' : item.type === 'doc' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
         <span className="material-symbols-outlined text-[32px] filled">{item.icon}</span>
       </div>
       <div className={`absolute -bottom-1 -right-1 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center size-5 ${item.status === 'ready' || item.status === 'completed' ? 'bg-green-500' : 'bg-primary animate-pulse'}`}>
         <span className="material-symbols-outlined text-white text-[12px] font-bold">{item.status === 'ready' || item.status === 'completed' ? 'check' : 'sync'}</span>
       </div>
     </div>
-    <div className="flex flex-col justify-center flex-1 min-w-0">
-      <p className="text-slate-900 dark:text-white text-base font-semibold truncate leading-tight">{item.title}</p>
+    <div className="flex flex-col justify-center flex-1 min-w-0 cursor-pointer" onClick={onDownload}>
+      <p className="text-slate-900 dark:text-white text-base font-semibold truncate leading-tight hover:text-primary transition-colors">{item.title}</p>
       <div className="flex items-center gap-2 mt-1">
         <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
           {item.action}
@@ -137,9 +159,17 @@ const HistoryCard: React.FC<{ item: any }> = ({ item }) => (
         <span className="text-slate-400 text-xs">{item.time}</span>
       </div>
     </div>
-    <button className="flex items-center justify-center size-10 rounded-full text-primary bg-primary/5">
-      <span className="material-symbols-outlined text-[20px]">ios_share</span>
-    </button>
+
+    <div className="flex items-center gap-2">
+      {item.output_url && (
+        <button onClick={onDownload} className="flex items-center justify-center size-10 rounded-full text-green-600 bg-green-50 hover:bg-green-100 transition-colors" title="Baixar">
+          <span className="material-symbols-outlined text-[20px]">download</span>
+        </button>
+      )}
+      <button onClick={onDelete} className="flex items-center justify-center size-10 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Apagar">
+        <span className="material-symbols-outlined text-[20px]">delete</span>
+      </button>
+    </div>
   </div>
 );
 

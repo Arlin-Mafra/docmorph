@@ -129,10 +129,23 @@ const Config: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `result_${new Date().getTime()}.${format.toLowerCase()} `;
+      a.download = `result_${new Date().getTime()}.${format.toLowerCase()}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+
+      // 4. Upload Result to Supabase (Persistence)
+      try {
+        // Convert Blob to File
+        const resultFile = new File([blob], `result_${job.id}.${format.toLowerCase()}`, { type: blob.type });
+        await FileService.uploadFile(resultFile, user.id, job.id, true);
+      } catch (uploadErr) {
+        console.error('Failed to upload result to storage:', uploadErr);
+        // Don't block the user flow, just log it.
+      }
+
+      // Update Job Status
+      await supabase.from('conversions').update({ status: 'completed' }).eq('id', job.id);
 
       alert('Arquivo processado com sucesso!');
       navigate(AppRoute.HISTORY);
@@ -190,8 +203,8 @@ const Config: React.FC = () => {
                   key={idx}
                   onClick={() => toggleSelection(file.id)}
                   className={`group cursor - pointer flex items - center justify - between gap - 4 p - 4 rounded - xl shadow - soft border transition - all ${isSelected
-                      ? 'bg-primary/5 border-primary shadow-md'
-                      : 'bg-white dark:bg-slate-800 border-transparent dark:border-slate-700 hover:border-gray-200'
+                    ? 'bg-primary/5 border-primary shadow-md'
+                    : 'bg-white dark:bg-slate-800 border-transparent dark:border-slate-700 hover:border-gray-200'
                     } `}
                 >
                   <div className="flex items-center gap-4 flex-1 overflow-hidden">

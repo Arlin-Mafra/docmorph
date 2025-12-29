@@ -15,9 +15,11 @@ export const FileService = {
     /**
      * Uploads a file to Supabase Storage and records it in the database options.
      */
-    async uploadFile(file: File, userId: string): Promise<UploadedFile> {
+    async uploadFile(file: File | Blob, userId: string, conversionId?: string, isOutput: boolean = false): Promise<UploadedFile> {
         // 1. Upload to Storage
-        const fileExt = file.name.split('.').pop();
+        // Handle Blob name
+        const fileNameStr = (file as File).name || `output_${Date.now()}.${isOutput ? 'pdf' : 'dat'}`;
+        const fileExt = fileNameStr.split('.').pop();
         const fileName = `${userId}/${uuidv4()}.${fileExt}`;
         const filePath = `${fileName}`;
 
@@ -39,11 +41,12 @@ export const FileService = {
             .from('documents')
             .insert({
                 user_id: userId,
-                name: file.name,
+                name: fileNameStr,
                 size: file.size,
-                mime_type: file.type,
+                mime_type: file.type || 'application/octet-stream',
                 storage_path: filePath,
-                is_output: false
+                is_output: isOutput,
+                conversion_id: conversionId
             })
             .select()
             .single();
@@ -131,16 +134,56 @@ export const FileService = {
     },
 
     /**
-     * User conversion history
+     * User conversion history with output documents
      */
     async getConversionHistory(userId: string) {
-        const { data, error } = await supabase
+        // Fetch conversions
+        const { data: conversions, error } = await supabase
             .from('conversions')
             .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return data;
+
+        // Fetch output files for these conversions
+        // We can do this efficiently by getting all documents linked to these conversions
+        // or by a join if supported, but two queries is fine for now.
+        const conversionIds = conversions.map(c => c.id);
+        const { data: documents } = await supabase
+            .from('documents')
+            .select('*')
+            .in('conversion_id', conversionIds)
+            .eq('is_output', true);
+
+        // Merge
+        return conversions.map(c => {
+            const outputDoc = documents?.find(d => d.conversion_id === c.id);
+            return {
+                ...c,
+                output_document: outputDoc
+            };
+        });
+    },
+
+    async deleteConversion(conversionId: string) {
+        // Also delete associated output documents if we want strict cleanup
+        // First get the docs
+        const { data: docs } = await supabase
+            .from('documents')
+            .select('*')
+            .eq('conversion_id', conversionId);
+
+        if (docs) {
+            for (const doc of docs) {
+                // Delete file from storage
+                await supabase.storage.from('files').remove([doc.storage_path]);
+            }
+            // Delete DB records
+            await supabase.from('documents').delete().eq('conversion_id', conversionId);
+        }
+
+        // Delete conversion
+        await supabase.from('conversions').delete().eq('id', conversionId);
     }
 };
