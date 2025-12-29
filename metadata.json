@@ -1,0 +1,8 @@
+
+{
+  "name": "DocMorph",
+  "description": "A comprehensive document management platform to merge, convert, compress, and sign documents with AI-powered insights.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
