@@ -107,22 +107,34 @@ const Settings: React.FC<SettingsProps> = ({ darkMode, onToggleTheme, onLogout }
         {/* Group: Plan */}
         <div>
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Plano</h3>
-          <div className={`rounded-xl p-[1px] ${isPro ? 'bg-gradient-to-r from-green-500/50 to-emerald-500/50' : 'bg-gradient-to-r from-primary/50 to-blue-500/50'}`}>
-            <div onClick={() => navigate(AppRoute.PAYMENT)} className="bg-white dark:bg-slate-800 rounded-xl shadow-soft overflow-hidden p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-between h-full">
-              <div className="flex items-center gap-3">
-                <div className={`flex items-center justify-center size-9 rounded-full text-white shadow-sm ${isPro ? 'bg-green-500' : 'bg-gradient-to-br from-primary to-blue-600'}`}>
-                  <span className="material-symbols-outlined text-[20px]">{isPro ? 'verified' : 'diamond'}</span>
+          <div className="space-y-3">
+            <div className={`rounded-xl p-[1px] ${isPro ? 'bg-gradient-to-r from-green-500/50 to-emerald-500/50' : 'bg-gradient-to-r from-primary/50 to-blue-500/50'}`}>
+              <div onClick={() => navigate(AppRoute.PAYMENT)} className="bg-white dark:bg-slate-800 rounded-xl shadow-soft overflow-hidden p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-between h-full">
+                <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-center size-9 rounded-full text-white shadow-sm ${isPro ? 'bg-green-500' : 'bg-gradient-to-br from-primary to-blue-600'}`}>
+                    <span className="material-symbols-outlined text-[20px]">{isPro ? 'verified' : 'diamond'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className={`font-bold text-sm ${isPro ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>
+                      {isPro ? 'Assinatura Premium' : 'Fazer Upgrade'}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {isPro ? 'Sua conta é PRO' : 'Desbloqueie todos os recursos'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className={`font-bold text-sm ${isPro ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>
-                    {isPro ? 'Assinatura Premium' : 'Fazer Upgrade'}
-                  </span>
-                  <span className="text-[10px] text-slate-500">
-                    {isPro ? 'Sua conta é PRO' : 'Desbloqueie todos os recursos'}
-                  </span>
-                </div>
+                <span className="material-symbols-outlined text-slate-400">chevron_right</span>
               </div>
-              <span className="material-symbols-outlined text-slate-400">chevron_right</span>
+            </div>
+
+            <div onClick={() => navigate(AppRoute.PAYMENT_HISTORY)} className="bg-white dark:bg-slate-800 rounded-xl shadow-soft overflow-hidden p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-between border border-transparent dark:border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center size-9 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-500">
+                  <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                </div>
+                <span className="font-medium text-sm text-slate-900 dark:text-white">Histórico de Pagamentos</span>
+              </div>
+              <span className="material-symbols-outlined text-gray-400 text-[20px]">chevron_right</span>
             </div>
           </div>
         </div>

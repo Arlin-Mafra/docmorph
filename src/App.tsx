@@ -17,6 +17,7 @@ import History from './pages/History';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import ChangePassword from './pages/ChangePassword';
+import PaymentHistory from './pages/PaymentHistory';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -55,6 +56,7 @@ const App: React.FC = () => {
             <Route path={AppRoute.SETTINGS} element={<Settings darkMode={darkMode} onToggleTheme={toggleTheme} onLogout={logout} />} />
             <Route path={AppRoute.PROFILE} element={<Profile />} />
             <Route path={AppRoute.CHANGE_PASSWORD} element={<ChangePassword />} />
+            <Route path={AppRoute.PAYMENT_HISTORY} element={<PaymentHistory />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to={AppRoute.WELCOME} />} />

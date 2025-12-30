@@ -12,7 +12,8 @@ export enum AppRoute {
   HISTORY = '/history',
   SETTINGS = '/settings',
   PROFILE = '/profile',
-  CHANGE_PASSWORD = '/change-password'
+  CHANGE_PASSWORD = '/change-password',
+  PAYMENT_HISTORY = '/payment-history'
 }
 
 export interface DocumentFile {
