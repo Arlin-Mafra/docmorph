@@ -1,11 +1,25 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppRoute } from '../types';
 import BottomNav from '../components/BottomNav';
+import { supabase } from '../lib/supabase';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    checkUserStatus();
+  }, []);
+
+  const checkUserStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase.from('profiles').select('is_pro').eq('id', user.id).single();
+      if (data?.is_pro) setIsPro(true);
+    }
+  };
 
   const tools = [
     { id: 'merge', title: 'Juntar PDFs', desc: 'Combine múltiplos arquivos em um único documento.', icon: 'layers', color: 'blue' },
@@ -36,10 +50,17 @@ const Dashboard: React.FC = () => {
             <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">DocMorph</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(AppRoute.PAYMENT)} className="relative overflow-hidden group bg-gradient-to-r from-primary to-blue-500 text-white text-xs font-bold py-2 px-3 rounded-xl shadow-glow transition-all active:scale-95 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px] filled text-yellow-300">workspace_premium</span>
-              <span className="relative z-10">Premium</span>
-            </button>
+            {isPro ? (
+              <div className="flex items-center gap-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold py-1.5 px-3 rounded-xl border border-green-200 dark:border-green-800">
+                <span className="material-symbols-outlined text-[16px] filled">verified</span>
+                <span>PRO</span>
+              </div>
+            ) : (
+              <button onClick={() => navigate(AppRoute.PAYMENT)} className="relative overflow-hidden group bg-gradient-to-r from-primary to-blue-500 text-white text-xs font-bold py-2 px-3 rounded-xl shadow-glow transition-all active:scale-95 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px] filled text-yellow-300">workspace_premium</span>
+                <span className="relative z-10">Premium</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -56,7 +77,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-1 mb-6 px-1">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Ferramentas Populares</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Ferramentas</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">Selecione uma ferramenta para começar.</p>
         </div>
 

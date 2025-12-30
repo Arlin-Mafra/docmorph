@@ -7,21 +7,21 @@ const BottomNav: React.FC = () => {
   return (
     <nav className="absolute bottom-0 left-0 w-full bg-white dark:bg-slate-800 border-t border-gray-100 dark:border-slate-700 pb-safe pt-2 px-6 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-40">
       <div className="flex items-center justify-between max-w-md mx-auto h-16">
-        <NavLink 
-          to={AppRoute.DASHBOARD} 
+        <NavLink
+          to={AppRoute.DASHBOARD}
           className={({ isActive }) => `group flex flex-col items-center gap-1 w-16 transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`}
         >
           {/* Use children as function to access isActive state */}
           {({ isActive }) => (
             <>
               <span className={`material-symbols-outlined transition-transform ${isActive ? 'filled scale-110' : ''}`}>grid_view</span>
-              <span className="text-[10px] font-medium">Tools</span>
+              <span className="text-[10px] font-medium">Ferramentas</span>
             </>
           )}
         </NavLink>
 
-        <NavLink 
-          to={AppRoute.HISTORY} 
+        <NavLink
+          to={AppRoute.HISTORY}
           className={({ isActive }) => `group flex flex-col items-center gap-1 w-16 transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`}
         >
           {/* Use children as function to access isActive state */}
@@ -39,8 +39,8 @@ const BottomNav: React.FC = () => {
           </NavLink>
         </div>
 
-        <NavLink 
-          to={AppRoute.PROFILE} 
+        <NavLink
+          to={AppRoute.PROFILE}
           className={({ isActive }) => `group flex flex-col items-center gap-1 w-16 transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`}
         >
           {/* Use children as function to access isActive state */}
@@ -52,8 +52,8 @@ const BottomNav: React.FC = () => {
           )}
         </NavLink>
 
-        <NavLink 
-          to={AppRoute.SETTINGS} 
+        <NavLink
+          to={AppRoute.SETTINGS}
           className={({ isActive }) => `group flex flex-col items-center gap-1 w-16 transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`}
         >
           {/* Use children as function to access isActive state */}
